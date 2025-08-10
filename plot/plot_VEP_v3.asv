@@ -1,0 +1,317 @@
+%% set parameters
+font_size = 20;
+
+subjids = {'P1001','P1004'};
+subjlabels = {'P1001','P1004'};
+
+elecgroups = {'Occipital','Parietal','Frontal','LeftTemporal','RightTemporal'};
+segcon = {'Entire trial','1-sec segments'};
+
+%% plot 6-way decoding
+
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error.mat');
+
+
+figure; hold on
+set(gcf,'Position',[ 247   182   802   784]);
+
+for s = 1:length(subjids)
+    sub_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_data(strcmp({sub_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot); hold on
+    l = plot([0.5,5.5],[1/6,1/6]*100,'--k','LineWidth',2);
+    l2 = plot([0.5,5.5],[0.2167,0.2167]*100,'--r','LineWidth',2);
+
+    ylabel('Classification accuracy (%)');
+    ylim([0,30]);
+    title(subjlabels{s});
+    legend(segcon);
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_%s.png',subjids{s});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    clf
+end
+close()
+
+%% plot binary
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error_Binary.mat');
+stimuli = {'Control','Disc','45Bar','-45Bar','3Rings','5Rings'};
+
+for s = 1:length(subjids)
+        
+
+        for i = 1:length(stimuli)
+            for j = i:length(stimuli)
+                
+                if i==j
+                    data_for_plot = ones(5,2)*100;
+                else
+                    
+                temp_data = class_error_all(...
+                    strcmp({class_error_all.Subject},subjids{s})...
+                    &cellfun(@(x) isequal(x, [i-1,j-1]), {class_error_all.Pairs}));
+
+                data_for_plot = [];
+                for el = 1:length(elecgroups)
+                    data_for_plot = [data_for_plot;...
+                        [temp_data(strcmp({temp_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+                end
+                data_for_plot = 100 - 100*data_for_plot;
+                end
+
+                subplot(6,6,i+(j-1)*6)
+                x = categorical({'O','P','F','LT','RT'});
+                x = reordercats(x,cellstr(x)');
+                b = bar(x,data_for_plot);hold on
+                l = plot([0.5,5.5],[0.5,0.5]*100,'--k','LineWidth',2);
+                l2 = plot([0.5,5.5],[0.65,0.65]*100,'--r','LineWidth',2);
+                ylim([0,90]);
+                %                     set(gca,'FontSize',font_size);
+               
+            end
+        end
+end
+
+                
+
+
+
+
+
+
+
+
+
+
+
+
+end
+
+%% plot control vs. disc
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error_disc.mat');
+
+figure; hold on
+set(gcf,'Position',[ 247   182   802   784]);
+
+for s = 1:length(subjids)
+    sub_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_data(strcmp({sub_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);hold on
+    l = plot([0.5,5.5],[0.5,0.5]*100,'--k','LineWidth',2);
+    l2 = plot([0.5,5.5],[0.65,0.65]*100,'--r','LineWidth',2);
+
+    ylabel('Classification accuracy (%)');
+    ylim([0,90]);
+    title(subjlabels{s});
+    legend(segcon);
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_Disc_%s.png',subjids{s});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    clf
+end
+close()
+
+%% plot control vs. 45Bar
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error_Bar.mat');
+
+figure; hold on
+set(gcf,'Position',[ 247   182   802   784]);
+
+for s = 1:length(subjids)
+    sub_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_data(strcmp({sub_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);hold on
+    l = plot([0.5,5.5],[0.5,0.5]*100,'--k','LineWidth',2);
+    l2 = plot([0.5,5.5],[0.65,0.65]*100,'--r','LineWidth',2);
+
+    ylabel('Classification accuracy (%)');
+    ylim([0,90]);
+    title(subjlabels{s});
+    legend(segcon);
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_Bar_%s.png',subjids{s});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    clf
+end
+close()
+
+%% plot control vs. -45Bar
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error_NegBar.mat');
+
+figure; hold on
+set(gcf,'Position',[ 247   182   802   784]);
+
+for s = 1:length(subjids)
+    sub_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_data(strcmp({sub_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);hold on
+    l = plot([0.5,5.5],[0.5,0.5]*100,'--k','LineWidth',2);
+    l2 = plot([0.5,5.5],[0.65,0.65]*100,'--r','LineWidth',2);
+
+    ylabel('Classification accuracy (%)');
+    ylim([0,90]);
+    title(subjlabels{s});
+    legend(segcon);
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_NegBar%s.png',subjids{s});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    clf
+end
+close()
+
+
+%% plot control vs. 3Rings
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error_3Rings.mat');
+
+figure; hold on
+set(gcf,'Position',[ 247   182   802   784]);
+
+for s = 1:length(subjids)
+    sub_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_data(strcmp({sub_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);hold on
+    l = plot([0.5,5.5],[0.5,0.5]*100,'--k','LineWidth',2);
+    l2 = plot([0.5,5.5],[0.65,0.65]*100,'--r','LineWidth',2);
+
+    ylabel('Classification accuracy (%)');
+    ylim([0,90]);
+    title(subjlabels{s});
+    legend(segcon);
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_3Rings_%s.png',subjids{s});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    clf
+end
+close()
+
+%% plot control vs. 5Rings
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error_5Rings.mat');
+
+figure; hold on
+set(gcf,'Position',[ 247   182   802   784]);
+
+for s = 1:length(subjids)
+    sub_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_data(strcmp({sub_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);hold on
+    l = plot([0.5,5.5],[0.5,0.5]*100,'--k','LineWidth',2);
+    l2 = plot([0.5,5.5],[0.65,0.65]*100,'--r','LineWidth',2);
+
+    ylabel('Classification accuracy (%)');
+    ylim([0,90]);
+    title(subjlabels{s});
+    legend(segcon);
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_5Rings%s.png',subjids{s});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    clf
+end
+close
+
+%% plot Bars vs. Rings
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error_BarRing.mat');
+
+figure; hold on
+set(gcf,'Position',[ 247   182   802   784]);
+
+for s = 1:length(subjids)
+    sub_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_data(strcmp({sub_data.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);hold on
+    l = plot([0.5,5.5],[0.5,0.5]*100,'--k','LineWidth',2);
+    l2 = plot([0.5,5.5],[0.65,0.65]*100,'--r','LineWidth',2);
+
+    ylabel('Classification accuracy (%)');
+    ylim([0,90]);
+    title(subjlabels{s});
+    legend(segcon);
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_BarRing_%s.png',subjids{s});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    clf
+end

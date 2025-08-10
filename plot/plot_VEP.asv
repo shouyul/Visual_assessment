@@ -1,0 +1,167 @@
+%% set plotting parameters
+clear all
+srate = 250;
+times = 0:1/srate:30-1/srate;
+
+cus_cmap = {'#80AFBF','#608595','#DFC286','#C07A92','#E2C3C9'};
+
+font_size = 20;
+
+%%
+cd '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Results'
+load('AllSub_class_error.mat');
+
+% 
+% P1001 = load('P1001_class_error.mat');
+% P1004 = load('P1004_class_error.mat');
+% TEST = load('TEST_class_error.mat');
+% 
+% class_errors = 100*[mean(P1001.class_error_all),mean(P1004.class_error_all),mean(TEST.class_error_all)];
+% class_errors_1sec = 100*[mean(P1001.class_error_1sec_avg),mean(P1004.class_error_1sec_avg),mean(TEST.class_error_1sec_avg)];
+% class_errors_time = 100*[P1001.class_error_time;P1004.class_error_time;TEST.class_error];
+
+%% get labels
+subjids = {'P1001','P1004','TEST'};
+subjlabels = {'P1001','P1004','MB'};
+elecgroups = unique({class_error_all.ElecGroup});
+elecgroups = elecgroups([3,4,1,2,5]);
+segcon = {'Entire trial','1-sec segments','3-sec segments'};
+
+%% plot all subjects for each elec group
+
+for el = 1:length(elecgroups)
+    elcgroup_class_error = class_error_all(strcmp({class_error_all.ElecGroup},elecgroups{el}));
+    
+    data_for_plot = [];
+    for s = 1:length(subjids)
+        data_for_plot = [data_for_plot;...
+            [elcgroup_class_error(strcmp({elcgroup_class_error.Subject},subjids{s})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+    
+    
+    figure;hold on
+    set(gcf,'Position',[302   473   923   481])
+    x = categorical({'P1001','P1004','MB'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);
+    b(1).FaceColor = cus_cmap{1};
+    b(2).FaceColor = cus_cmap{5};
+    b(3).FaceColor = cus_cmap{3};
+    l = plot([0.5,3.5],[1/6,1/6]*100,'--','LineWidth',2,'Color',cus_cmap{4});
+    ylabel('Classification accuracy (%)');
+    ylim([10,35]);
+    title('VEP Decoding');
+    legend(segcon,'Location','bestoutside');
+    set(gca,'FontSize',font_size);
+
+    filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+    filename = sprintf('VEP_decoding_%s.png',elecgroups{el});
+    print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+    close()
+
+end
+
+%% compare elec groups
+font_size = 13;
+figure;hold on
+set(gcf,'Position',[680    91   916   886]);
+sgtitle(sprintf('VEP Task - %s',subjlabels{s}),'FontSize',20);
+
+for s = 1:length(subjids)
+    sub_class_error = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+        
+    data_for_plot = [];
+    for el = 1:length(elecgroups)
+        data_for_plot = [data_for_plot;...
+            [sub_class_error(strcmp({sub_class_error.ElecGroup},elecgroups{el})).MeanAccuracy]];
+    end
+    data_for_plot = 100 - 100*data_for_plot;
+
+    subplot(length(subjids),1,s);hold on
+    x = categorical({'Occipital','Parietal','Frontal','Left Temporal','Right Temporal'});
+    x = reordercats(x,cellstr(x)');
+    b = bar(x,data_for_plot);
+    b(1).FaceColor = cus_cmap{1};
+    b(2).FaceColor = cus_cmap{5};
+    b(3).FaceColor = cus_cmap{3};
+    l = plot([0.5,5.5],[1/6,1/6]*100,'--','LineWidth',2,'Color',cus_cmap{4});
+    ylabel('Classification accuracy (%)');
+    ylim([10,35]);
+    title(subjlabels{s});
+    legend(segcon,'Location','bestoutside');
+    set(gca,'FontSize',font_size);
+end
+
+filepath = '/Users/shouyuling/Desktop/Postdoc/Projects/Gensight/Data/VEPTask/Figures/SL/';
+filename = sprintf('VEP_decoding.png');
+print(gcf,[filepath,filename],'-dpng', '-r300', '-painters');
+close()
+
+%% confusion matrix
+num_perm = size(class_error_all(1).Predictions,2);
+
+for i = 1:length(class_error_all)
+    conf_mat = [];
+    if ~isempty(class_error_all(i).Predictions)
+        for n = 1:num_perm
+            conf_mat(:,:,n) = confusionmat(class_error_all(i).TrueLabels,class_error_all(i).Predictions(:,n));
+        end
+    end
+    class_error_all(i).ConfMat = mean(conf_mat,3);
+end
+
+order = categorical({'Control','Disc','45Bar','-45Bar','3Rings','5Rings'});
+order = reordercats(order,cellstr(order)');
+
+sub_ID = 'P1001';
+elec_group = 'Occipital';
+seg_con = 'ThreeSecAverage';
+
+temp_data = class_error_all(strcmp({class_error_all.Subject},subjids{s}));
+
+confusionchart(round(class_error_all(1).ConfMat),order,'RowSummary','row-normalized', ...
+    'ColumnSummary','column-normalized');
+
+%%
+
+% %%
+% figure;hold on
+% x = categorical({'P1001','P1004','MB'});
+% b = bar(x,100-class_errors);
+% b.FaceColor = cus_cmap{1};
+% l = plot([0.5,2.5],[1/6,1/6]*100,'--','LineWidth',2,'Color',cus_cmap{4});
+% ylabel('Classification accuracy (%)');
+% ylim([10,22]);
+% title('VEP Decoding');
+% set(gca,'FontSize',font_size);
+% 
+% %%
+% figure;hold on
+% x = categorical({'P1001','P1004','MB'});
+% b = bar(x,100-[class_errors;class_errors_1sec]');
+% b(1).FaceColor = cus_cmap{1};
+% b(2).FaceColor = cus_cmap{5};
+% l = plot([0.5,3.5],[1/6,1/6]*100,'--','LineWidth',2,'Color',cus_cmap{4});
+% ylabel('Classification accuracy (%)');
+% ylim([10,22]);
+% title('VEP Decoding');
+% set(gca,'FontSize',font_size);
+% legend({'Entire trial','1-sec segment'},'Location','bestoutside')
+% 
+% %%
+% figure;hold on
+% set(gcf,'Position',[302   473   923   481])
+% l = plot(times,100-class_errors_time);
+% l(1).Color = cus_cmap{1};
+% l(2).Color = cus_cmap{5};
+% l2 = plot([0,30],[1/6,1/6]*100,'--','LineWidth',2,'Color',cus_cmap{4});
+% ylim([0,40]);
+% ylabel('Classification accuracy (%)');
+% xlabel('Time (s)')
+% title('VEP Decoding Timecourse');
+% set(gca,'FontSize',font_size);
+% legend({'P1001','P1004','MB'})
+
+
+
